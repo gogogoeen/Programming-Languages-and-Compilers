@@ -83,6 +83,8 @@ public final class JVM {
     // Loading and storing instructions
     GETSTATIC = "getstatic",
     PUTSTATIC = "putstatic",
+    PUTFIELD = "putfield",
+    GETFIELD = "getfield",
 
     // load a local variable into the operand stack
     ALOAD = "aload",
@@ -191,7 +193,8 @@ public final class JVM {
    
     DUP = "dup",
     POP = "pop", 
-    NOP = "nop"; 
+    NOP = "nop",
+    SWAP = "swap";
 
 // Limitations of the JVM 
 

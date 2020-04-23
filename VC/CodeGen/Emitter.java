@@ -91,18 +91,27 @@ public final class Emitter implements Visitor {
       DeclList dlAST = (DeclList) list;
       if (dlAST.D instanceof GlobalVarDecl) {
         GlobalVarDecl vAST = (GlobalVarDecl) dlAST.D;
-        if (!vAST.E.isEmptyExpr()) {
-          vAST.E.visit(this, frame);
-        } else {
-          if (vAST.T.equals(StdEnvironment.floatType))
-            emit(JVM.FCONST_0);
-          else
-            emit(JVM.ICONST_0);
-          frame.push();
+        if (!vAST.T.isArrayType()) {
+          if (!vAST.E.isEmptyExpr()) {
+            vAST.E.visit(this, frame);
+          } else {
+            if (vAST.T.equals(StdEnvironment.floatType))
+              emit(JVM.FCONST_0);
+            else
+              emit(JVM.ICONST_0);
+            frame.push();
+          }
+          emitPUTSTATIC(VCtoJavaType(vAST.T), vAST.I.spelling); 
+          frame.pop();
+        }else {                                    //Global array declaration
+          ((ArrayType) vAST.T).E.visit(this, frame);    // get the index of the 
+          emit(JVM.NEWARRAY, ((ArrayType) vAST.T).T.toString());	// create new array object
+          if (!vAST.E.isEmptyExpr()) {			
+            vAST.E.visit(this, frame);
+          }
+          emitPUTSTATIC(VCtoJavaType(vAST.T), vAST.I.spelling); 
+          frame.pop();
         }
-        emitPUTSTATIC(VCtoJavaType(vAST.T), vAST.I.spelling); 
-        frame.pop();
-
       }
       list = dlAST.DL;
     }
@@ -300,10 +309,9 @@ public final class Emitter implements Visitor {
   
   public Object visitAssignExpr(AssignExpr ast, Object o) {
 	Frame frame = (Frame) o;
-	//if (ast.E1 instanceof ArrayExpr) {
 	  
-	//}
 	ast.E2.visit(this, o);
+	
 	if (ast.parent instanceof Expr) {emit(JVM.DUP); frame.push();} //if the assignment result need to be used
 	if (ast.E1 instanceof VarExpr) {		//if the lvariable is scalar
      VarExpr varE = (VarExpr) ast.E1;	  
@@ -319,7 +327,22 @@ public final class Emitter implements Visitor {
 		else {emitFSTORE(((SimpleVar) varE.V).I); frame.push();}
 	    return null;
 	}else {									//if the lvariable is array
-		
+	  ArrayExpr arrayE = (ArrayExpr) ast.E1;
+	  if (((SimpleVar) arrayE.V).I.decl instanceof GlobalVarDecl) {		////store value in the static global
+		GlobalVarDecl gvar = (GlobalVarDecl) ((SimpleVar) arrayE.V).I.decl;
+		emitGETSTATIC(VCtoJavaType(gvar.T), gvar.I.spelling);
+	  }else {
+	    int index = (int) arrayE.V.visit(this, o);		
+	    emitALOAD(index);
+	  }
+	  frame.push();
+	  emit(JVM.SWAP);	//SWAP the vale to the top of the operand stack
+	  arrayE.E.visit(this, o);		// get the index of the array
+	  emit(JVM.SWAP);	//SWAP the vale to the top of the operand stack
+	  if (arrayE.V.type == StdEnvironment.intType) emit(JVM.IASTORE);
+	  else if (arrayE.V.type == StdEnvironment.booleanType) emit(JVM.BASTORE);
+	  else if (arrayE.V.type == StdEnvironment.floatType) emit(JVM.FASTORE);
+	  frame.pop(3);
 	}
     return null;
   }
@@ -400,18 +423,19 @@ public final class Emitter implements Visitor {
     return null;
   }
   
-  
-  
   public Object visitArrayExpr(ArrayExpr ast, Object o) {
 	Frame frame = (Frame) o;
 	if (((SimpleVar) ast.V).I.decl instanceof GlobalVarDecl) {		//if array is gloabal
-	  return null;			// TO be done. LOADING FROM Global
+	  GlobalVarDecl gvar = (GlobalVarDecl) ((SimpleVar) ast.V).I.decl;
+	  emitGETSTATIC(VCtoJavaType(gvar.T), gvar.I.spelling);
+	}else {											//if array is local
+	  int index = (int) ast.V.visit(this, o);
+	  emitALOAD(index);
 	}
-	int index = (int) ast.V.visit(this, o);
-	emitALOAD(index);
 	frame.push();
 	ast.E.visit(this, o);
-	if (ast.V.type == StdEnvironment.intType || ast.V.type == StdEnvironment.booleanType) {emit(JVM.IALOAD); frame.pop();}
+	if (ast.V.type == StdEnvironment.intType) {emit(JVM.IALOAD); frame.pop();}
+	else if (ast.V.type == StdEnvironment.booleanType) {emit(JVM.BALOAD); frame.pop();}
 	else {emit(JVM.FALOAD); frame.pop();}
     return null;
   }
@@ -496,7 +520,7 @@ public final class Emitter implements Visitor {
       // directly available in the FuncDecl node but can be gathered
       // by traversing its field PL.
 
-      StringBuffer argsTypes = new StringBuffer("");
+      StringBuffer argsTypes = new StringBuffer("");		//
       List fpl = fAST.PL;
       while (! fpl.isEmpty()) {
         if (((ParaList) fpl).P.T.equals(StdEnvironment.booleanType))
@@ -752,12 +776,10 @@ public final class Emitter implements Visitor {
   }
   
   public Object visitArrayType(ArrayType ast, Object o) {
-	    //////     !!!!!!!!!!!!    ////////////
     return null;
   }
   
   public Object visitStringType(StringType ast, Object o) {
-	    //////     !!!!!!!!!!!!    ////////////
     return null;
   }
 
@@ -987,7 +1009,11 @@ public final class Emitter implements Visitor {
       return "I";
     else if (t.equals(StdEnvironment.floatType))
       return "F";
-    else // if (t.equals(StdEnvironment.voidType))
+    else if (t.isArrayType()) {
+      ArrayType type = (ArrayType) t;
+      return type.toString();
+    }
+    else	// if (t.equals(StdEnvironment.voidType))
       return "V";
   }
   
