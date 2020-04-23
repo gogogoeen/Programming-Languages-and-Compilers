@@ -80,7 +80,7 @@ public final class JVM {
      WIDE = "wide", // not supported by Jasmin
 
 
-  // Loading and storing instructions
+    // Loading and storing instructions
     GETSTATIC = "getstatic",
     PUTSTATIC = "putstatic",
 
@@ -117,19 +117,12 @@ public final class JVM {
     ISTORE_2 = "istore_2",
     ISTORE_3 = "istore_3",
     
-    //Load int from array
-    IALOAD = "iaload",
-    //Store int into array
-    IASTORE = "iastore",
-    //Load float from array
-    FALOAD = "faload",
-    //Store float into array
-    FASTORE = "fastore",
+   
     
     // load a constant into the operand stack
 
     ICONST = "iconst",     // does not exist; used in the method
-			   // emitICONST of the class Emitter.
+    // emitICONST of the class Emitter.
 
     ICONST_M1 = "iconst_m1",
     ICONST_0 = "iconst_0",
@@ -146,6 +139,8 @@ public final class JVM {
     LDC = "ldc",
 
   // Method invocation and return instructions
+    
+ 
 
     INVOKESTATIC = "invokestatic",
     INVOKESPECIAL = "invokespecial",
@@ -176,6 +171,22 @@ public final class JVM {
   // Object creation and manipulation
     NEW = "new",
 
+  // Array creation an manipulation
+    NEWARRAY = "newarray",
+    //Load int from array
+    IALOAD = "iaload",
+    //Store int into array
+    IASTORE = "iastore",
+    //Load float from array
+    FALOAD = "faload",
+    //Store float into array
+    FASTORE = "fastore",
+    //Load boolean from array
+    BALOAD = "baload",
+    //Store boolean into array
+    BASTORE = "bastore",
+    
+    
   // Operand Stack management instructions
    
     DUP = "dup",

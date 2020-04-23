@@ -27,6 +27,7 @@ public final class Emitter implements Visitor {
   private String inputFilename;
   private String classname;
   private String outputFilename;
+  private int arraycounter;
 
   public Emitter(String inputFilename, ErrorReporter reporter) {
     this.inputFilename = inputFilename;
@@ -394,7 +395,8 @@ public final class Emitter implements Visitor {
   }
   
   public Object visitInitExpr(InitExpr ast, Object o) {
-	    //////     !!!!!!!!!!!!    ////////////
+	arraycounter = 0;    //initial the arraycounter to 0
+	ast.IL.visit(this, o);
     return null;
   }
   
@@ -523,9 +525,21 @@ public final class Emitter implements Visitor {
   }
   
   public Object visitExprList(ExprList ast, Object o) {
-	    //////     !!!!!!!!!!!!    ////////////
-  return null;
-}
+    Frame frame = (Frame) o; 
+    if (!ast.E.isEmptyExpr()) {
+      emit(JVM.DUP);
+      frame.push();
+      emitICONST(arraycounter);		// load the arrayindex
+      frame.push();
+      ast.E.visit(this, o);			// load the value 
+      if (ast.E.type.isBooleanType()) {emit(JVM.BASTORE);frame.pop(3);} //save value into array
+      else if (ast.E.type.isIntType()) {emit(JVM.IASTORE);frame.pop(3);} 
+      if (ast.E.type.isFloatType()) {emit(JVM.FASTORE);frame.pop(3);} 
+      arraycounter++;			// increase the arrayindex
+    }
+    ast.EL.visit(this, o);
+    return null;
+  }
 
   public Object visitIntExpr(IntExpr ast, Object o) {
     ast.IL.visit(this, o);
@@ -644,30 +658,32 @@ public final class Emitter implements Visitor {
     Frame frame = (Frame) o;
     ast.index = frame.getNewIndex();
     String T;
-    if (ast.T.isArrayType()) T=((ArrayType) ast.T).toString();
-    else T = VCtoJavaType(ast.T);
-    System.out.println(T);
-
-    emit(JVM.VAR + " " + ast.index + " is " + ast.I.spelling + " " + T + " from " + (String) frame.scopeStart.peek() + " to " +  (String) frame.scopeEnd.peek());
+    if (ast.T.isArrayType()) {
+      ArrayType type = (ArrayType) ast.T;
+      T=type.toString();
+      emit(JVM.VAR + " " + ast.index + " is " + ast.I.spelling + " " + T + " from " + (String) frame.scopeStart.peek() + " to " +  (String) frame.scopeEnd.peek());
+      type.E.visit(this, o);		// load the size of the array
+      emit(JVM.NEWARRAY, type.T.toString());	// create new array object
+    }
+    else {T = VCtoJavaType(ast.T); emit(JVM.VAR + " " + ast.index + " is " + ast.I.spelling + " " + T + " from " + (String) frame.scopeStart.peek() + " to " +  (String) frame.scopeEnd.peek());}
 
     if (!ast.E.isEmptyExpr()) {
       ast.E.visit(this, o);
-  
-      if (ast.T.equals(StdEnvironment.floatType)) {
-        // cannot call emitFSTORE(ast.I) since this I is not an
-        // applied occurrence 
-        if (ast.index >= 0 && ast.index <= 3) 
-          emit(JVM.FSTORE + "_" + ast.index); 
-        else
-          emit(JVM.FSTORE, ast.index); 
-        frame.pop();
-      } else {
-        // cannot call emitISTORE(ast.I) since this I is not an
-        // applied occurrence 
-        if (ast.index >= 0 && ast.index <= 3) 
-          emit(JVM.ISTORE + "_" + ast.index); 
-        else
-          emit(JVM.ISTORE, ast.index); 
+      if (!ast.T.isArrayType()) {
+        if (ast.T.equals(StdEnvironment.floatType)) {
+          // cannot call emitFSTORE(ast.I) and emitISTORE(ast.I) since this I is not an
+          // applied occurrence 
+          if (ast.index >= 0 && ast.index <= 3) emit(JVM.FSTORE + "_" + ast.index); 
+          else  emit(JVM.FSTORE, ast.index); 
+          frame.pop();
+        } else {
+          if (ast.index >= 0 && ast.index <= 3) emit(JVM.ISTORE + "_" + ast.index); 
+          else  emit(JVM.ISTORE, ast.index); 
+          frame.pop();
+        }
+      }else {
+        if (ast.index >= 0 && ast.index <= 3) emit(JVM.ASTORE + "_" + ast.index);
+        else emit(JVM.ASTORE, ast.index);
         frame.pop();
       }
     }
