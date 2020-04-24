@@ -630,6 +630,7 @@ public final class Checker implements Visitor {
         if (p.T.isArrayType()){								// when the parameter is array type
           Type PT = (Type) p.T.visit(this, o);
           Type AT = (Type) binding.T.visit(this, o);
+          V.I.decl = binding;
           if (!PT.equals(AT)) {
             if (PT.isFloatType() && AT.isIntType()) { return null;}
             else {reporter.reportError(errMesg[27] + ": %", p.I.spelling, ast.position); return null;}

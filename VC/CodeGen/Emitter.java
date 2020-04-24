@@ -323,8 +323,8 @@ public final class Emitter implements Visitor {
 		}
 		if (varE.V.type == StdEnvironment.intType || varE.V.type == StdEnvironment.booleanType) {
 			emitISTORE(((SimpleVar) varE.V).I); 
-			frame.push();}
-		else {emitFSTORE(((SimpleVar) varE.V).I); frame.push();}
+			frame.pop();}
+		else {emitFSTORE(((SimpleVar) varE.V).I); frame.pop();}
 	    return null;
 	}else {									//if the lvariable is array
 	  ArrayExpr arrayE = (ArrayExpr) ast.E1;
@@ -450,7 +450,8 @@ public final class Emitter implements Visitor {
 	}
 	int index = (int) ast.V.visit(this, o);
 	if (ast.V.type == StdEnvironment.intType || ast.V.type == StdEnvironment.booleanType) {emitILOAD(index); frame.push();}
-	else {emitFLOAD(index); frame.push();}
+	else if (ast.V.type == StdEnvironment.floatType){emitFLOAD(index); frame.push();}
+	else {emitALOAD(index); frame.push();}
     return null;
   }
   
@@ -520,21 +521,24 @@ public final class Emitter implements Visitor {
       // directly available in the FuncDecl node but can be gathered
       // by traversing its field PL.
 
-      StringBuffer argsTypes = new StringBuffer("");		//
+      StringBuffer argsTypes = new StringBuffer("");		
       List fpl = fAST.PL;
+      int array_num = 0;		//to calculate how many array arguments
       while (! fpl.isEmpty()) {
-        if (((ParaList) fpl).P.T.equals(StdEnvironment.booleanType))
-          argsTypes.append("Z");         
-        else if (((ParaList) fpl).P.T.equals(StdEnvironment.intType))
-          argsTypes.append("I");         
-        else
-          argsTypes.append("F");         
+        if (((ParaList) fpl).P.T.equals(StdEnvironment.booleanType))     argsTypes.append("Z");         
+        else if (((ParaList) fpl).P.T.equals(StdEnvironment.intType))    argsTypes.append("I");         
+        else if (((ParaList) fpl).P.T.equals(StdEnvironment.floatType))  argsTypes.append("F");         
+        else {      // parameter is an array
+          ArrayType paraT = (ArrayType) ((ParaList) fpl).P.T;
+          argsTypes.append(paraT.toString());
+          array_num ++;
+        }	
         fpl = ((ParaList) fpl).PL;
       }
       
       emit("invokevirtual", classname + "/" + fname + "(" + argsTypes + ")" + retType);
-      frame.pop(argsTypes.length() + 1);
-      if (! retType.equals("V"))
+      frame.pop(argsTypes.length() + 1 - array_num);  // if one argument is array its 
+      if (! retType.equals("V"))                      // length is 2 (e.g [I)
         frame.push();
     }
     return null;
@@ -634,12 +638,13 @@ public final class Emitter implements Visitor {
       StringBuffer argsTypes = new StringBuffer("");
       List fpl = ast.PL;
       while (! fpl.isEmpty()) {
-        if (((ParaList) fpl).P.T.equals(StdEnvironment.booleanType))
-          argsTypes.append("Z");         
-        else if (((ParaList) fpl).P.T.equals(StdEnvironment.intType))
-          argsTypes.append("I");         
-        else
-          argsTypes.append("F");         
+        if (((ParaList) fpl).P.T.equals(StdEnvironment.booleanType))     argsTypes.append("Z");         
+        else if (((ParaList) fpl).P.T.equals(StdEnvironment.intType))    argsTypes.append("I");         
+        else if (((ParaList) fpl).P.T.equals(StdEnvironment.floatType))  argsTypes.append("F");
+        else {		// parameter is array
+          ArrayType paraT = (ArrayType) ((ParaList) fpl).P.T;
+          argsTypes.append(paraT.toString());
+        }
         fpl = ((ParaList) fpl).PL;
       }
 
@@ -733,7 +738,7 @@ public final class Emitter implements Visitor {
   }
 
   public Object visitEmptyParaList(EmptyParaList ast, Object o) {
-    return null;
+	return null;
   }
 
   // Arguments
@@ -745,7 +750,9 @@ public final class Emitter implements Visitor {
   }
 
   public Object visitArg(Arg ast, Object o) {
-    ast.E.visit(this, o);
+	Frame frame = (Frame) o;
+	//if (ast.E instanceof VarExpr)
+	ast.E.visit(this, o);
     return null;
   }
 
@@ -824,7 +831,7 @@ public final class Emitter implements Visitor {
   // Variables 
 
   public Object visitSimpleVar(SimpleVar ast, Object o) {	//return the index of var
-    if (ast.I.decl instanceof ParaDecl) {return ((ParaDecl) ast.I.decl).index;}
+	if (ast.I.decl instanceof ParaDecl) {return ((ParaDecl) ast.I.decl).index;}
     else {return ((LocalVarDecl) ast.I.decl).index;}
   }
 
