@@ -715,6 +715,10 @@ public final class Emitter implements Visitor {
         else emit(JVM.ASTORE, ast.index);
         frame.pop();
       }
+    }else if (ast.E.isEmptyExpr() && ast.T.isArrayType()) {
+      if (ast.index >= 0 && ast.index <= 3) emit(JVM.ASTORE + "_" + ast.index);
+      else emit(JVM.ASTORE, ast.index);
+      frame.pop();
     }
 
     return null;
@@ -1018,7 +1022,8 @@ public final class Emitter implements Visitor {
       return "F";
     else if (t.isArrayType()) {
       ArrayType type = (ArrayType) t;
-      return type.toString();
+      if (type.T.equals(StdEnvironment.booleanType))   {return "[Z";}
+      else   {return type.toString();}
     }
     else	// if (t.equals(StdEnvironment.voidType))
       return "V";
