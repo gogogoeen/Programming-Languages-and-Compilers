@@ -291,7 +291,7 @@ public final class Checker implements Visitor {
     //Type Coercion for return expr
     if (d.T.isFloatType() && t.isIntType()) {ast.E = TypeCoercion(ast.E);}
     
-    if (!d.T.assignable(t) || t.isErrorType()) 
+    if (!d.T.assignable(t) || (t.isErrorType() && (!d.T.isVoidType() || !ast.E.isEmptyExpr())))   // void can have empty return
       reporter.reportError(errMesg[8], "", ast.position);
     
     return null;

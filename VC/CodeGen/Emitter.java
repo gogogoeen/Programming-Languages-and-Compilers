@@ -212,14 +212,17 @@ public final class Emitter implements Visitor {
 	String end = frame.getNewLabel();		//label for end of a while loop
 	frame.conStack.push(start);      //Push the continue label start to conStack
 	frame.brkStack.push(end);        //Push the break label end to conStack
+	int conNum = frame.conStack.size();
+	int brkNum = frame.brkStack.size();
 	emit(start + ":");
 	ast.E.visit(this, o);
 	emit(JVM.IFEQ, end);
-	ast.S.visit(this, o);
+	frame.pop();
+	ast.S.visit(this, frame);
     emit(JVM.GOTO, start);
     emit(end + ":");
-    frame.conStack.pop();         //Pop the continue label start in the conStack
-    frame.brkStack.pop();         //Pop the break label start in the conStack
+    if (conNum == frame.conStack.size()) {frame.conStack.pop();}         //Pop the continue label start in the conStack if no continue stmt
+    if (brkNum == frame.brkStack.size()) {frame.brkStack.pop();}         //Pop the break label start in the conStack if no break stmt
 	
 	return null;
   }
@@ -228,18 +231,27 @@ public final class Emitter implements Visitor {
 	Frame frame = (Frame) o;
 	String start = frame.getNewLabel();		//label for start of a for loop
 	String end = frame.getNewLabel();		//label for end of a for loop
+	String init_start = frame.getNewLabel();		//label for start of a for loop
+	String init_end = frame.getNewLabel();		//label for end of a for loop
 	frame.conStack.push(start);      //Push the continue label start to conStack
 	frame.brkStack.push(end);        //Push the break label end to conStack
-	ast.E1.visit(this, o);
+	int conNum = frame.conStack.size();
+	int brkNum = frame.brkStack.size();
+	emit(JVM.GOTO, init_start);
 	emit(start + ":");
+	ast.E3.visit(this, o);
+	emit(JVM.GOTO, init_end);
+	emit(init_start + ":");
+	ast.E1.visit(this, o);
+	emit(init_end + ":");
 	ast.E2.visit(this, o);
 	emit(JVM.IFEQ, end);
-	ast.E3.visit(this, o);
+	frame.pop();
 	ast.S.visit(this, o);
     emit(JVM.GOTO, start);
     emit(end + ":");
-    frame.conStack.pop();         //Pop the continue label start in the conStack
-    frame.brkStack.pop();         //Pop the break label start in the conStack
+    if (conNum == frame.conStack.size()) {frame.conStack.pop();}         //Pop the continue label start in the conStack if no continue stmt
+    if (brkNum == frame.brkStack.size()) {frame.brkStack.pop();}         //Pop the break label start in the conStack if no break stmt
 	
     return null;
   }
@@ -274,9 +286,9 @@ public final class Emitter implements Visitor {
      }
      
      ast.E.visit(this, o);
-     if (ast.E.type == StdEnvironment.floatType) emit(JVM.FRETURN);
-     else if (ast.E.type == StdEnvironment.intType || ast.E.type == StdEnvironment.booleanType)
-    	 emit(JVM.IRETURN);
+     if (ast.E.type == StdEnvironment.floatType)  {emit(JVM.FRETURN);}
+     else if (ast.E.type == StdEnvironment.intType || ast.E.type == StdEnvironment.booleanType)  {emit(JVM.IRETURN);}
+     else if (ast.E.isEmptyExpr())   {emit(JVM.RETURN); return null;}
      frame.pop();
      return null;
   }
