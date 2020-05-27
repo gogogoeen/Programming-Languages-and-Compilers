@@ -1,0 +1,16 @@
+void g(int i, float f, boolean b) { 
+  putIntLn(i); 
+  putFloatLn(f); 
+  putBoolLn(b); 
+  }
+void f(int i, float f) { 
+  putIntLn(i); 
+  putFloatLn(f); 
+  g(i + 1, f + 1, true);
+  }
+int main() {
+  int i = 1;
+  int j = 2;
+  f(i, j);
+  return 0;
+}

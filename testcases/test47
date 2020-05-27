@@ -1,0 +1,6 @@
+float g (int i) { return i; }
+float f(int i, float f) { return i + g(i); }
+int main() {
+  putFloatLn(f(1, 2));
+  return 0;
+}

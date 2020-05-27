@@ -1,0 +1,5 @@
+boolean f() { putIntLn(111); return true; } // not called
+int main() {
+putBoolLn(false && f());
+return 0;
+}

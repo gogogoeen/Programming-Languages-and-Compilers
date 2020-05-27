@@ -1,0 +1,11 @@
+int main() {
+int i;
+i = 1;
+while (i <= 6) {
+  i = i + 1;
+  if (i == 2) continue;
+  putIntLn(i);
+  if (i == 4) break;
+  }
+return 0;
+}  

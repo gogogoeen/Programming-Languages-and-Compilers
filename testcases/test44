@@ -1,0 +1,12 @@
+int main() {
+int i;
+int a[10];
+for (i = 0; i < 10; i=i+1) {
+  a[i] = i;
+}
+for (i = 9; i >= 0; i=i-1) {
+  if (i == 2) continue;
+  putIntLn(i);
+}
+return 0;
+}

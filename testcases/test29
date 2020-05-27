@@ -1,0 +1,11 @@
+void f(int a[], float f) { 
+  putIntLn(a[0]); 
+  a[0] = 100;
+  putFloatLn(f); 
+  }
+int main() {
+  int a[] = {1};
+  f(a, 2);
+  putIntLn(a[0]);  // a[0] = 100 
+  return 0;
+}

@@ -1,0 +1,5 @@
+int f(int i, int j) { return i + j; }
+int main() {
+  putIntLn(f(1, 2));
+  return 0;
+}

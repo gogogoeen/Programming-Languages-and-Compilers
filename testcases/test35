@@ -1,0 +1,8 @@
+int main() {
+float f = 11;
+if (f == 11) 
+  putFloatLn(f);
+else
+  putFloatLn(0);
+return 0;
+}

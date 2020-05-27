@@ -1,0 +1,7 @@
+int f() { return 99; }
+int g() { return 1 + f(); }
+int main() {
+  int a[1] = {100};
+  putIntLn(a[g()-100]);
+  return 0;
+}

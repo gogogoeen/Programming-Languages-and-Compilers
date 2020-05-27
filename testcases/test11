@@ -1,0 +1,4 @@
+int main() {
+putBoolLn(!true);
+return 0;
+}

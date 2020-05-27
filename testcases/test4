@@ -1,0 +1,12 @@
+int main() {
+int i1 = 1;
+int i2 = 2;
+int a3[2] = {3, 4};
+int i4 = i1 + i2 * a3[0] + a3[1];
+putIntLn(i1);
+putIntLn(i2);
+putIntLn(a3[0]);
+putIntLn(a3[1]);
+putIntLn(i4);
+return 0;
+}

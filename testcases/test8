@@ -1,0 +1,9 @@
+int main() {
+int i = 100; 
+int j = i;
+int k = i + j - 100; 
+putIntLn(i);
+putIntLn(j);
+putIntLn(k);
+return 0;
+}

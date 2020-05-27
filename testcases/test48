@@ -1,0 +1,11 @@
+void f() { }
+float g() { return 1.0; }
+boolean h() { return false; }
+int main() {
+  1;
+  f();  
+  g();
+  putFloatLn(g());
+  putBoolLn(h());
+  return 0;
+}

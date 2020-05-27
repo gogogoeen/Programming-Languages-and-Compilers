@@ -1,0 +1,4 @@
+int main() {
+putIntLn(-4);
+return 0;
+}

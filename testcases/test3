@@ -1,0 +1,11 @@
+int main() {
+int i = 10;
+float f;
+i = 100;
+i = i + 1;
+putIntLn(i);
+f = 1.0; 
+f = i + f;
+putFloatLn(f);
+return 0;
+}

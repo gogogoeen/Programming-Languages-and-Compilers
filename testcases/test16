@@ -1,0 +1,8 @@
+int i = 100; 
+int main() {
+float f = i = i + 20;
+float x;
+x = f / 2;
+putFloatLn(x);
+return 0;
+}

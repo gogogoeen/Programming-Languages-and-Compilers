@@ -1,0 +1,4 @@
+int main() {
+putFloatLn(+4.0);
+return 0;
+}

@@ -1,0 +1,10 @@
+int main() {
+  int i = 1; 
+  putIntLn(i);
+  { 
+    float i = 2;
+    putFloatLn(i);
+  }
+  putIntLn(i);
+  return 0;
+}
