@@ -20,7 +20,6 @@ javac -cp . VC/vc [-options] filename
 where options include:
 ```bash
         -d [1234]           display the AST (without SourcePosition)
-  
                             1:  the AST from the parser (without SourcePosition)
                             2:  the AST from the parser (with SourcePosition)
                             3:  the AST from the checker (without SourcePosition)
@@ -30,3 +29,6 @@ where options include:
         -u [file]           unparse the (non-annotated) AST into <file>
                             (or filename + "u" if <file> is unspecified
 ```
+if your code passes all the checks from the compiler, it will produce a ```filename.j``` file, which is a jasmin assembly code
+### jasmin assembler
+use jasmin assembler to convert ```.j``` file into ```.class``` file
