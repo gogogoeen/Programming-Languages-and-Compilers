@@ -1,9 +1,9 @@
 # Programming-Languages-and-Compilers
 # using java to implement a compiler for vc language
 ## how to use
-first download VC and jasmin-2.4 files to the directory you want to run the compiler.
+First download VC and jasmin-2.4 files to the directory you want to run the compiler.
 ### compile
-go to directory you put VC and jasmin and run and compile the whole program.
+Go to directory you put VC and jasmin and run and compile the whole program.
 ```bash
 javac -cp . VC/vc.java
 ```
@@ -13,7 +13,7 @@ javac System.java
 ```
 now you finish all the setup
 ### run the vc compiler
-go to directory you put VC and jasmin and use the vc compiler to compile your vc code
+Go to directory you put VC and jasmin and use the vc compiler to compile your vc code
 ```bash
 javac -cp . VC/vc [-options] filename
 ```
@@ -31,4 +31,14 @@ where options include:
 ```
 if your code passes all the checks from the compiler, it will produce a ```filename.j``` file, which is a jasmin assembly code
 ### jasmin assembler
-use jasmin assembler to convert ```.j``` file into ```.class``` file
+To use jasmin, cd to jasmin-2.4 directory and run:
+```bash
+java -jar jasmin.jar filename
+```
+then jasmin assembler will convert ```.j``` file into ```.class``` file. Read more details about jasmin at ```Readme.txt``` in jasmin-2.4
+### run your code
+Run:
+```bash
+java filename
+```
+your code has been compiled and can run now. Enjoy!
